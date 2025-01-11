@@ -1,3 +1,4 @@
 # Repozytorium zaliczeniowe PAW
 ## Autorzy:
-Patrycja Oczkoś
+* Patrycja Oczkoś
+* Julia Englender
