@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Person, Team, MONTHS, SHIRT_SIZES, Stanowisko, Osoba
+from datetime import date
 
 
 class PersonSerializer(serializers.Serializer):
@@ -14,8 +15,7 @@ class PersonSerializer(serializers.Serializer):
 
         if not value.istitle():
             raise serializers.ValidationError(
-                "Nazwa osoby powinna rozpoczynać się wielką literą!",
-            )
+                "Nazwa osoby powinna rozpoczynać się wielką literą!")
         return value
 
     def create(self, validated_data):
@@ -31,17 +31,41 @@ class PersonSerializer(serializers.Serializer):
         return instance
 
 
-class StanowiskoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Stanowisko
-        fields = ['id', 'nazwa', 'opis']
+class StanowiskoSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only = True)
+    nazwa = serializers.CharField(max_length = 80)
+    opis = serializers.CharField()
+    
+    def create(self, validated_data):
+        return Stanowisko.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        instance.nazwa = validated_data.get('nazwa', instance.nazwa)
+        instance.opis = validated_data.get('opis', instance.opis)
+        instance.save()
+        return instance
 
 
 class OsobaSerializer(serializers.ModelSerializer):  # Uwaga: poprawiona nazwa
+    def validate_imie(self, value):
+        if not value.isalpha():
+            raise serializers.ValidationError("Pole 'imie' musi zawierać tylko litery!")
+        return value
+    
+    def validate_nazwisko(self, value):
+        if not value.isalpha():
+            raise serializers.ValidationError("Pole 'nazwisko' musi zawierać tylko litery!")
+        return value
+    
+    def validate_data_dodania(self, value):
+        if value > date.today():
+            raise serializers.ValidationError("Pole 'data_dodania' nie może byc z przyszłości.")
+        return value
+   
     class Meta:
         model = Osoba
         fields = ['id', 'imie', 'nazwisko', 'plec', 'stanowisko', 'data_dodania']
-        read_only_fields = ['id', 'data_dodania']
+        read_only_fields = ['id']
 
 
 class TeamSerializer(serializers.ModelSerializer):
