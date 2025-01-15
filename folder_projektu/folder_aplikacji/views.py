@@ -16,9 +16,12 @@ import datetime
 from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer
 from rest_framework.views import APIView
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> lab_07_feature_class_view
 =======
 >>>>>>> f8390c0 (lab_07_zadania)
+=======
+>>>>>>> eb27c12 (zadania_lab07_class_view)
 =======
 >>>>>>> eb27c12 (zadania_lab07_class_view)
 
@@ -130,6 +133,7 @@ def stanowisko_detail(request, pk):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> f8390c0 (lab_07_zadania)
  
@@ -213,6 +217,8 @@ def team_detail_html(request, id):
 =======
 =======
 >>>>>>> eb27c12 (zadania_lab07_class_view)
+=======
+>>>>>>> eb27c12 (zadania_lab07_class_view)
 class OsobaList(APIView): 
     def get(self, request):
         osoby = Osoba.objects.all()
@@ -242,10 +248,14 @@ class OsobaDetail(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         osoba.delete()
 <<<<<<< HEAD
+<<<<<<< HEAD
         return Response(status= status.HTTP_204_NO_CONTENT)
 >>>>>>> lab_07_feature_class_view
 =======
 >>>>>>> f8390c0 (lab_07_zadania)
+=======
+        return Response(status= status.HTTP_204_NO_CONTENT)
+>>>>>>> eb27c12 (zadania_lab07_class_view)
 =======
         return Response(status= status.HTTP_204_NO_CONTENT)
 >>>>>>> eb27c12 (zadania_lab07_class_view)
