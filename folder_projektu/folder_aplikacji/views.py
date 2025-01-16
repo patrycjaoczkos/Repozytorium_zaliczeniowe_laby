@@ -3,7 +3,10 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Osoba, Person, Stanowisko, Team
-from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer
+from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer, TeamSerializer
+from django.http import Http404, HttpResponse
+from django.http import HttpResponse
+import datetime
 
 # określamy dostępne metody żądania dla tego endpointu
 @api_view(['GET'])
@@ -110,5 +113,80 @@ def stanowisko_detail(request, pk):
         stanowisko.delete()
         return Response(status= status.HTTP_204_NO_CONTENT)  
     
-        
+ 
+
+def welcome_view(request):
+    now = datetime.datetime.now()
+    html = f"""
+        <html><body>
+        Witaj użytkowniku! </br>
+        Aktualna data i czas na serwerze: {now}.
+        </body></html>"""
+    return HttpResponse(html)     
     
+def person_list_html(request):
+    # Pobieranie wszystkich obiektów Person i Team z bazy danych
+    persons = Person.objects.all()
+    teams = Team.objects.all()
+
+    # Przekazanie danych obu modeli do szablonu
+    return render(request, 
+                  "folder_aplikacji/person/list.html", 
+                  {'persons': persons, 'teams': teams})
+
+    
+def person_detail_html(request, id):
+    # pobieramy konkretny obiekt Person
+    try:
+        person = Person.objects.get(id=id)
+    except Person.DoesNotExist:
+        raise Http404("Obiekt Person o podanym id nie istnieje")
+
+    return render(request,
+                  "folder_aplikacji/person/detail.html",
+                  {'person': person})
+
+# Widok API dla listy zespołów (GET/POST)
+@api_view(['GET', 'POST'])
+def team_list(request):
+    if request.method == 'GET':
+        teams = Team.objects.all()
+        serializer = TeamSerializer(teams, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = TeamSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Widok API dla szczegółów zespołu (GET/DELETE)
+@api_view(['GET', 'DELETE'])
+def team_detail(request, pk):
+    try:
+        team = Team.objects.get(pk=pk)
+    except Team.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = TeamSerializer(team)
+        return Response(serializer.data)
+
+    elif request.method == 'DELETE':
+        team.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+# Widok HTML dla listy zespołów
+def team_list_html(request):
+    teams = Team.objects.all()
+    return render(request, "folder_aplikacji/team/list.html", {'teams': teams})
+
+# Widok HTML dla szczegółów zespołu
+def team_detail_html(request, id):
+    try:
+        team = Team.objects.get(id=id)
+    except Team.DoesNotExist:
+        raise Http404("Obiekt Team o podanym id nie istnieje")
+    
+    return render(request, "folder_aplikacji/team/detail.html", {'team': team})

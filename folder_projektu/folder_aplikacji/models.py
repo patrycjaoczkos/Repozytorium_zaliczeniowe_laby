@@ -32,7 +32,7 @@ class Person(models.Model):
     team = models.ForeignKey('Team', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return self.name
+        return f"Person : {self.name}, dodana w {self.month_added}, o rozmiarze koszuli {self.shirt_size}." 
     
 class Stanowisko(models.Model):
         nazwa = models.CharField(max_length=80, blank = False, null = False)

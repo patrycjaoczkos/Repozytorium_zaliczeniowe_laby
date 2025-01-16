@@ -1,0 +1,22 @@
+{% extends "folder_aplikacji/base.html" %}
+
+{% block title %}Lista obiektów Person{% endblock %}
+
+{% block content %}
+<p>Aktualnie w mojej bazie dodane są poniższe obiekty Person.</p>
+{% for person in persons %}
+    <p>Person: {{ person.name }}</p>
+    <p>Rozmiar koszuli: {{ person.shirt_size }}</p>
+    <p>Miesiąc dodania: {{ person.month_added }}</p>
+    <p>Drużyna: {{ person.team.name }}</p>
+    <hr>
+{% endfor %}
+
+<p>Aktualnie w mojej bazie dodane są poniższe drużyny.</p>
+{% for team in teams %}
+    <p>Nazwa drużyny: {{ team.name }}</p>
+    <p>Kraj: {{ team.country }}</p>
+    <hr>
+{% endfor %}
+{% endblock %}
+
