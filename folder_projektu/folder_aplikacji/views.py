@@ -4,14 +4,20 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Osoba, Person, Stanowisko, Team
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f8390c0 (lab_07_zadania)
 from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer, TeamSerializer
 from django.http import Http404, HttpResponse
 from django.http import HttpResponse
 import datetime
+<<<<<<< HEAD
 =======
 from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer
 from rest_framework.views import APIView
 >>>>>>> lab_07_feature_class_view
+=======
+>>>>>>> f8390c0 (lab_07_zadania)
 
 # określamy dostępne metody żądania dla tego endpointu
 @api_view(['GET'])
@@ -119,6 +125,9 @@ def stanowisko_detail(request, pk):
         return Response(status= status.HTTP_204_NO_CONTENT)  
     
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f8390c0 (lab_07_zadania)
  
 
 def welcome_view(request):
@@ -196,6 +205,7 @@ def team_detail_html(request, id):
         raise Http404("Obiekt Team o podanym id nie istnieje")
     
     return render(request, "folder_aplikacji/team/detail.html", {'team': team})
+<<<<<<< HEAD
 =======
 class OsobaList(APIView): 
     def get(self, request):
@@ -227,3 +237,5 @@ class OsobaDetail(APIView):
         osoba.delete()
         return Response(status= status.HTTP_204_NO_CONTENT)
 >>>>>>> lab_07_feature_class_view
+=======
+>>>>>>> f8390c0 (lab_07_zadania)
