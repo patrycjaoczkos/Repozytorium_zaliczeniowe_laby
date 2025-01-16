@@ -1,6 +1,7 @@
 from datetime import date
 from django.db import models # type: ignore
 from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 
 # deklaracja statycznej listy wyboru do wykorzystania w klasie modelu
@@ -35,11 +36,16 @@ class Person(models.Model):
         return f"Person : {self.name}, dodana w {self.month_added}, o rozmiarze koszuli {self.shirt_size}." 
     
 class Stanowisko(models.Model):
-        nazwa = models.CharField(max_length=80, blank = False, null = False)
-        opis = models.TextField(blank = False, null = False)
-        
-        def __str__(self):
-            return self.nazwa
+    nazwa = models.CharField(max_length=80, blank=False, null=False)
+    opis = models.TextField(blank=False, null=False)
+
+    def __str__(self):
+        return self.nazwa
+
+    # Dodaj metodę, która zwróci wszystkich członków stanowiska
+    def get_members(self):
+        return self.members.all()
+
 
 class Osoba(models.Model):
     PLEC_CHOICES = (
@@ -47,18 +53,22 @@ class Osoba(models.Model):
         ("M", "Mężczyzna"),
         ("I", "Inna"),
     )
-    
-    imie = models.CharField(max_length=40, blank = False, null = False)
-    nazwisko = models.CharField(max_length=60, blank = False, null = False)
+
+    imie = models.CharField(max_length=40, blank=False, null=False)
+    nazwisko = models.CharField(max_length=60, blank=False, null=False)
     plec = models.IntegerField(choices=PLCIE.choices, default=PLCIE.choices[2][0])
-    stanowisko = models.ForeignKey('Stanowisko', on_delete = models.CASCADE)
-    data_dodania = models.DateField(default=date.today, blank=False, null = False )
-   
-    
+    stanowisko = models.ForeignKey(
+        'Stanowisko',
+        on_delete=models.CASCADE,
+        related_name='members',  # Dodaj `related_name`, aby móc odwołać się do `Osoba` z poziomu `Stanowisko`
+    )
+    data_dodania = models.DateField(default=date.today, blank=False, null=False)
+    wlasciciel = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+
     def __str__(self):
         return f'{self.imie} {self.nazwisko}'
-    
+
     class Meta:
         ordering = ["nazwisko"]
-    
+
    

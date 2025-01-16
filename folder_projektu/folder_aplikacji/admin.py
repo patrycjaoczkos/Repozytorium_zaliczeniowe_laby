@@ -1,20 +1,20 @@
 from django.contrib import admin
 from .models import Team, Person, Osoba, Stanowisko
 
-# Rejestracja modeli w panelu administracyjnym z konfiguracją list_display i filtrami
+# Rejestracja modelu Person z konfiguracją list_display i filtrami
+@admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    # list_display przechowuje pola wyświetlane w tabeli
     list_display = ['name', 'shirt_size', 'team']
     list_filter = ['team']
 
-admin.site.register(Person, PersonAdmin)
-
+# Rejestracja modelu Stanowisko z konfiguracją list_display i filtrami
+@admin.register(Stanowisko)
 class StanowiskoAdmin(admin.ModelAdmin):
     list_display = ['nazwa', 'opis']
     list_filter = ['nazwa']
 
-admin.site.register(Stanowisko, StanowiskoAdmin)
-
+# Rejestracja modelu Osoba z niestandardowym polem stanowisko_with_id
+@admin.register(Osoba)
 class OsobaAdmin(admin.ModelAdmin):
     @admin.display(description="Stanowisko (ID)")
     def stanowisko_with_id(self, obj):
@@ -25,10 +25,7 @@ class OsobaAdmin(admin.ModelAdmin):
     list_display = ['imie', 'nazwisko', 'plec', 'stanowisko_with_id', 'data_dodania']
     list_filter = ['stanowisko', 'data_dodania']
 
-admin.site.register(Osoba, OsobaAdmin)
-
-# Rejestracja pozostałych modeli bez dodatkowej konfiguracji
-admin.site.register(Team)
-admin.site.register(Person)
-admin.site.register(Stanowisko)
-admin.site.register(Osoba)
+# Rejestracja modelu Team bez dodatkowej konfiguracji
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+    pass
