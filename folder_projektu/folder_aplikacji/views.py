@@ -1,31 +1,19 @@
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Osoba, Person, Stanowisko, Team
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f8390c0 (lab_07_zadania)
 from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer, TeamSerializer
 from django.http import Http404, HttpResponse
 from django.http import HttpResponse
 import datetime
-<<<<<<< HEAD
-=======
 from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer
 from rest_framework.views import APIView
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> lab_07_feature_class_view
-=======
->>>>>>> f8390c0 (lab_07_zadania)
-=======
->>>>>>> eb27c12 (zadania_lab07_class_view)
-=======
->>>>>>> eb27c12 (zadania_lab07_class_view)
 
-# określamy dostępne metody żądania dla tego endpointu
+
+
 @api_view(['GET'])
 def person_list(request):
     """
@@ -37,9 +25,10 @@ def person_list(request):
         return Response(serializer.data)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def person_detail(request, pk):
-
     """
     :param request: obiekt DRF Request
     :param pk: id obiektu Person
@@ -58,31 +47,72 @@ def person_detail(request, pk):
         serializer = PersonSerializer(person)
         return Response(serializer.data)
 
-    elif request.method == 'PUT':
+
+@api_view(['PUT'])
+@authentication_classes([SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def person_update(request, pk):
+    """
+    :param request: obiekt DRF Request
+    :param pk: id obiektu Person
+    :return: Response (with status and/or object/s data)
+    """
+    try:
+        person = Person.objects.get(pk=pk)
+    except Person.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'PUT':
         serializer = PersonSerializer(person, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    elif request.method == 'DELETE':
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def person_delete(request,pk):
+    try:
+        person = Person.objects.get(pk=pk)
+    except Person.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'DELETE':
         person.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        
+# Globalny komunikat dla niezalogowanych użytkowników
+from rest_framework.views import exception_handler
 
+def custom_exception_handler(exc, context):
+    response = exception_handler(exc, context)
+
+    if isinstance(exc, (PermissionError,)):  # Sprawdzenie błędu autoryzacji
+        return Response(
+            {
+                "detail": "Nie podano danych uwierzytelniających.",
+            },
+            status=status.HTTP_401_UNAUTHORIZED,  # UWzraw utawienie status header 
+        ) 
+            
 @api_view(['GET', 'POST'])
+@authentication_classes([SessionAuthentication, BasicAuthentication,])
+@permission_classes([IsAuthenticated])
 def osoba_list(request):
     if request.method == "GET":
-        osoby = Osoba.objects.all()
+        osoby = Osoba.objects.filter(wlasciciel = request.user)
         serializer = OsobaSerializer(osoby, many = True)
         return Response(serializer.data)
     if request.method == 'POST':
         serializer = OsobaSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(wlasciciel = request.user)
             return Response(serializer.data, status= status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
     
-@api_view(['GET','DELETE'])
+@api_view(['GET', 'DELETE'])
 def osoba_detail(request, pk):
     try:
         osoba = Osoba.objects.get(pk=pk)
@@ -94,12 +124,13 @@ def osoba_detail(request, pk):
         return Response(serializer.data)
     elif request.method == "DELETE":
         osoba.delete()
-        return Response(status= status.HTTP_204_NO_CONTENT)
-    
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 @api_view(['GET'])
 def osoba_search(request, substring):
-    osoby = Osoba.objects.filter(imie__icontains = substring) | Osoba.objects.filter(nazwisko__icontains = substring)
-    serializer = OsobaSerializer(osoby, many = True)
+    osoby = Osoba.objects.filter(imie__icontains=substring) | Osoba.objects.filter(nazwisko__icontains=substring)
+    serializer = OsobaSerializer(osoby, many=True)
     return Response(serializer.data)
     
 @api_view(['GET', 'POST'])
@@ -130,14 +161,6 @@ def stanowisko_detail(request, pk):
         stanowisko.delete()
         return Response(status= status.HTTP_204_NO_CONTENT)  
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f8390c0 (lab_07_zadania)
- 
-
 def welcome_view(request):
     now = datetime.datetime.now()
     html = f"""
@@ -213,12 +236,7 @@ def team_detail_html(request, id):
         raise Http404("Obiekt Team o podanym id nie istnieje")
     
     return render(request, "folder_aplikacji/team/detail.html", {'team': team})
-<<<<<<< HEAD
-=======
-=======
->>>>>>> eb27c12 (zadania_lab07_class_view)
-=======
->>>>>>> eb27c12 (zadania_lab07_class_view)
+
 class OsobaList(APIView): 
     def get(self, request):
         osoby = Osoba.objects.all()
@@ -247,15 +265,23 @@ class OsobaDetail(APIView):
         except Osoba.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         osoba.delete()
-<<<<<<< HEAD
-<<<<<<< HEAD
         return Response(status= status.HTTP_204_NO_CONTENT)
->>>>>>> lab_07_feature_class_view
-=======
->>>>>>> f8390c0 (lab_07_zadania)
-=======
-        return Response(status= status.HTTP_204_NO_CONTENT)
->>>>>>> eb27c12 (zadania_lab07_class_view)
-=======
-        return Response(status= status.HTTP_204_NO_CONTENT)
->>>>>>> eb27c12 (zadania_lab07_class_view)
+
+
+class StanowiskoMemberView(APIView):
+    permission_classes = [IsAuthenticated]  # Tylko zalogowani użytkownicy mają dostęp
+
+    def get(self, request, id):
+        """
+        Obsługuje żądanie GET dla członków danego stanowiska.
+        """
+        try:
+            stanowisko = Stanowisko.objects.get(pk=id)  # Pobierz stanowisko na podstawie ID
+            members = stanowisko.members.all()  # Pobierz powiązanych członków
+            members_data = [
+                {"id": member.id, "imie": member.imie, "nazwisko": member.nazwisko}
+                for member in members
+            ]
+            return Response({"members": members_data})
+        except Stanowisko.DoesNotExist:
+            return Response({"error": "Stanowisko nie istnieje"}, status=404)
