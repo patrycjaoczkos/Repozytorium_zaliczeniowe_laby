@@ -5,12 +5,15 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Osoba, Person, Stanowisko, Team
+from .permissions import CustomDjangoModelPermissions
 from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer, TeamSerializer
 from django.http import Http404, HttpResponse
 from django.http import HttpResponse
 import datetime
 from .serializers import OsobaSerializer, PersonSerializer, StanowiskoSerializer
 from rest_framework.views import APIView
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import permission_required, login_required
 
 
 
@@ -26,7 +29,7 @@ def person_list(request):
 
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def person_detail(request, pk):
     """
@@ -34,6 +37,9 @@ def person_detail(request, pk):
     :param pk: id obiektu Person
     :return: Response (with status and/or object/s data)
     """
+    #if not request.user.has_perm('folder_aplikacji.change_person'):
+        #raise PermissionDenied()
+    
     try:
         person = Person.objects.get(pk=pk)
     except Person.DoesNotExist:
@@ -102,7 +108,10 @@ def custom_exception_handler(exc, context):
 @permission_classes([IsAuthenticated])
 def osoba_list(request):
     if request.method == "GET":
-        osoby = Osoba.objects.filter(wlasciciel = request.user)
+        if not request.user.has_perm("folder_aplikacji.view_person_other_owner"):
+            osoby = Osoba.objects.filter(wlasciciel = request.user)
+        else:
+            osoby = Osoba.objects.all()
         serializer = OsobaSerializer(osoby, many = True)
         return Response(serializer.data)
     if request.method == 'POST':
@@ -169,7 +178,8 @@ def welcome_view(request):
         Aktualna data i czas na serwerze: {now}.
         </body></html>"""
     return HttpResponse(html)     
-    
+@login_required  
+@permission_required('folder_aplikacji.view_perosn') 
 def person_list_html(request):
     # Pobieranie wszystkich obiektów Person i Team z bazy danych
     persons = Person.objects.all()
@@ -285,3 +295,5 @@ class StanowiskoMemberView(APIView):
             return Response({"members": members_data})
         except Stanowisko.DoesNotExist:
             return Response({"error": "Stanowisko nie istnieje"}, status=404)
+        
+
