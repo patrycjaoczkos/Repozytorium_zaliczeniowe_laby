@@ -70,5 +70,10 @@ class Osoba(models.Model):
 
     class Meta:
         ordering = ["nazwisko"]
+        permissions = [
+    ("view_person_other_owner", "Pozwala zobaczyć modele Osoba innych właścicieli"),
+]
+
+     
 
    
